@@ -5,12 +5,11 @@ import hudson.model.*;
 import hudson.scm.ChangeLogSet;
 import hudson.scm.ChangeLogSet.AffectedFile;
 import hudson.scm.ChangeLogSet.Entry;
+import hudson.tasks.test.AbstractTestResultAction;
+import hudson.tasks.junit.CaseResult;
 import org.apache.commons.lang.StringUtils;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 @SuppressWarnings("rawtypes")
@@ -142,16 +141,38 @@ public class ActiveNotifier implements FineGrainedNotifier {
             if (r.isBuilding()) {
                 return "Starting...";
             }
+
             Result result = r.getResult();
             Run previousBuild = r.getProject().getLastBuild().getPreviousBuild();
             Result previousResult = (previousBuild != null) ? previousBuild.getResult() : Result.SUCCESS;
+
             if (result == Result.SUCCESS && previousResult == Result.FAILURE) return "Back to normal";
             if (result == Result.SUCCESS) return "Success";
-            if (result == Result.FAILURE) return "<b>FAILURE</b>";
+            if (result == Result.FAILURE) return "<b>FAILURE</b><br/>" + getTestFailureDescription(r);
             if (result == Result.ABORTED) return "ABORTED";
             if (result == Result.NOT_BUILT) return "Not built";
             if (result == Result.UNSTABLE) return "Unstable";
             return "Unknown";
+        }
+
+        static String getTestFailureDescription(AbstractBuild r) {
+            AbstractProject<?, ?> project = r.getProject();
+            HipChatNotifier.HipChatJobProperty jobProperty = project.getProperty(HipChatNotifier.HipChatJobProperty.class);
+            if (!jobProperty.getUseExtendedMessage()) {
+                return "";
+            }
+
+            StringBuilder statusMessage = new StringBuilder();
+
+            AbstractTestResultAction<?> testResultAction = r.getTestResultAction();
+            List<CaseResult> failedTests = testResultAction.getFailedTests();
+
+            for (CaseResult testResult:failedTests) {
+                statusMessage.append(testResult.getStatus().toString() + ": " + testResult.getFullName());
+                statusMessage.append("<br/>");
+            }
+
+            return statusMessage.toString();
         }
 
         public MessageBuilder append(String string) {

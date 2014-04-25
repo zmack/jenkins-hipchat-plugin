@@ -1,10 +1,7 @@
 package jenkins.plugins.hipchat;
 
 import hudson.Extension;
-import hudson.model.AbstractBuild;
-import hudson.model.AbstractProject;
-import hudson.model.Descriptor;
-import hudson.model.TaskListener;
+import hudson.model.*;
 import hudson.model.listeners.RunListener;
 import hudson.tasks.Publisher;
 
