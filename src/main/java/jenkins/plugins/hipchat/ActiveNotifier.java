@@ -172,6 +172,10 @@ public class ActiveNotifier implements FineGrainedNotifier {
                 statusMessage.append("<br/>");
             }
 
+            if ( testResultAction.getSkipCount() > 0 ) {
+                statusMessage.append(testResultAction.getSkipCount() + " skipped tests.");
+            }
+
             return statusMessage.toString();
         }
 
