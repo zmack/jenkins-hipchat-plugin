@@ -7,6 +7,8 @@ import hudson.scm.ChangeLogSet.AffectedFile;
 import hudson.scm.ChangeLogSet.Entry;
 import hudson.tasks.test.AbstractTestResultAction;
 import hudson.tasks.junit.CaseResult;
+import hudson.tasks.test.TestResult;
+import jenkins.model.Jenkins;
 import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
@@ -81,7 +83,6 @@ public class ActiveNotifier implements FineGrainedNotifier {
         Set<AffectedFile> files = new HashSet<AffectedFile>();
         for (Object o : changeSet.getItems()) {
             Entry entry = (Entry) o;
-            logger.info("Entry " + o);
             entries.add(entry);
             files.addAll(entry.getAffectedFiles());
         }
@@ -155,6 +156,18 @@ public class ActiveNotifier implements FineGrainedNotifier {
             return "Unknown";
         }
 
+        static AbstractTestResultAction<AbstractTestResultAction> getTestResultFromBuild(AbstractBuild r) {
+            Class klass;
+
+            try {
+                klass = Jenkins.getInstance().getPluginManager().uberClassLoader.loadClass("hudson.tasks.test.AbstractTestResultAction").asSubclass(Action.class);
+                logger.info(klass.toString());
+                return (AbstractTestResultAction) r.getAction(klass);
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
+        }
+
         static String getTestFailureDescription(AbstractBuild r) {
             AbstractProject<?, ?> project = r.getProject();
             HipChatNotifier.HipChatJobProperty jobProperty = project.getProperty(HipChatNotifier.HipChatJobProperty.class);
@@ -164,8 +177,13 @@ public class ActiveNotifier implements FineGrainedNotifier {
 
             StringBuilder statusMessage = new StringBuilder();
 
-            AbstractTestResultAction<?> testResultAction = r.getTestResultAction();
-            List<CaseResult> failedTests = testResultAction.getFailedTests();
+            AbstractTestResultAction<AbstractTestResultAction> testResultAction = getTestResultFromBuild(r);
+            if (testResultAction == null) {
+                return "";
+            }
+
+            @SuppressWarnings({"unchecked"})
+            List<CaseResult> failedTests = (List<CaseResult>)testResultAction.getFailedTests();
 
             for (CaseResult testResult:failedTests) {
                 statusMessage.append(testResult.getStatus().toString() + ": " + testResult.getFullName());

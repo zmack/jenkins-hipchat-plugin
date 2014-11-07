@@ -14,14 +14,14 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.447</version>
+        <version>1.580</version>
     </parent>
 
     <!-- keeping original groupId -->
     <groupId>org.jvnet.hudson.plugins</groupId>
 	<artifactId>hipchat</artifactId>
 	<packaging>hpi</packaging>
-	<version>0.1.5-SNAPSHOT</version>
+	<version>0.1.8-SNAPSHOT</version>
 	<name>Jenkins HipChat Plugin</name>
 	<description>A Build status publisher that notifies channels on a HipChat server</description>
     <url>http://wiki.jenkins-ci.org/display/JENKINS/HipChat+Plugin</url>
@@ -58,6 +58,11 @@
 			<version>3.1</version>
 		</dependency>
         <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>junit</artifactId>
+            <version>1.2-beta-3</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.10</version>
@@ -78,20 +83,6 @@
             <scope>provided</scope>
         </dependency>
     </dependencies>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                   <groupId>org.jenkins-ci.tools</groupId>
-                   <artifactId>maven-hpi-plugin</artifactId>
-                   <configuration>
-                       <disabledTestInjection>true</disabledTestInjection>
-                   </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
 
     <repositories>
         <repository>
